@@ -2,7 +2,6 @@ import {
   TOKEN_PROGRAM_ID,
   NATIVE_MINT,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
 } from "@solana/spl-token";
 import * as sha256 from "js-sha256"
 import {
@@ -29,7 +28,6 @@ import {
   u32,
 } from "@project-serum/borsh";
 
-import { AccountLayout, AccountInfo } from "@solana/spl-token";
 export async function wrapNative(
   amount: BN,
   walletPublicKey: PublicKey,

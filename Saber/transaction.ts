@@ -1,5 +1,6 @@
 import { checkTokenAccount, findAssociatedTokenAddress, wrapNative } from "../util";
-import { TOKEN_PROGRAM_ID, NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID, Token, MintInfo } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID, } from '@solana/spl-token';
+import * as Token from "@solana/spl-token"
 import BN from "bn.js";
 import {
     AccountMeta,
@@ -50,25 +51,25 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
     if (swapInfo.mintA.toString() == NATIVE_MINT.toString()) {
         // if true add a wrapNative IX
         let wrapNativeIns = await wrapNative(AtokenAmount, wallet, connection, false);
-        cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, AtokenSourceAccount, wallet, wallet, []))
+        cleanupTx.add(Token.createCloseAccountInstruction(AtokenSourceAccount, wallet, wallet, []))
         tx.add(wrapNativeIns);
     }
     // if Token A source account is created in this tx
     else if (!AtokenSourceAccountCreated) {
         // add a close account IX
-        cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, AtokenSourceAccount, wallet, wallet, []))
+        cleanupTx.add(Token.createCloseAccountInstruction(AtokenSourceAccount, wallet, wallet, []))
     }
     // check Token A is wSol
     if (swapInfo.mintB.toString() == NATIVE_MINT.toString()) {
         // if true add a wrapNative IX
         let wrapNativeIns = await wrapNative(BtokenAmount, wallet, connection, false);
-        cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, BtokenSourceAccount, wallet, wallet, []))
+        cleanupTx.add(Token.createCloseAccountInstruction(BtokenSourceAccount, wallet, wallet, []))
         tx.add(wrapNativeIns);
     }
     // if Token B source account is created in this tx
     else if (!BtokenSourceAccountCreated) {
         // add a close account IX
-        cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, BtokenSourceAccount, wallet, wallet, []))
+        cleanupTx.add(Token.createCloseAccountInstruction(BtokenSourceAccount, wallet, wallet, []))
     }
     // if Token A is wrapped
     if (swapInfo.mintAWrapped) {
@@ -79,7 +80,7 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
             let createAtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintAWrapInfo?.underlyingWrappedTokenMint as PublicKey, wrapMintAtokenAddress, wallet, wallet);
             tx.add(createAtokenAccount);
             // add a close account IX
-            cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, wrapMintAtokenAddress, wallet, wallet, []))
+            cleanupTx.add(Token.createCloseAccountInstruction(wrapMintAtokenAddress, wallet, wallet, []))
         }
         let multiplyer = (new BN(swapInfo.mintAWrapInfo?.multiplyer as BN));
         let wrapAIns = ins.wrapToken(swapInfo.mintAWrapInfo as wrapInfo, wallet, AtokenAmount.div(multiplyer),wrapMintAtokenAddress ,AtokenSourceAccount );
@@ -95,7 +96,7 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
             let createBtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintBWrapInfo?.underlyingWrappedTokenMint as PublicKey, wrapMintBtokenAddress, wallet, wallet);
             tx.add(createBtokenAccount);
             // add a close account IX
-            cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, wrapMintBtokenAddress, wallet, wallet, []))
+            cleanupTx.add(Token.createCloseAccountInstruction(wrapMintBtokenAddress, wallet, wallet, []))
         }
         let multiplyer = (new BN(swapInfo.mintBWrapInfo?.multiplyer as BN))
         let wrapBIns = ins.wrapToken(swapInfo.mintBWrapInfo as wrapInfo, wallet, BtokenAmount.div(multiplyer), wrapMintBtokenAddress, BtokenSourceAccount);
@@ -197,7 +198,7 @@ export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String,far
         tx.add(ins.unwrapToken(swapInfo.mintBWrapInfo as wrapInfo, wallet, recieveTokenAccount, mintBUnderlyingTokenAccount))
     }
     if (recieveTokenAccountMint.toString() == NATIVE_MINT.toString()) {
-        cleanupTx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID, recieveTokenAccount, wallet, wallet, []));
+        cleanupTx.add(Token.createCloseAccountInstruction(recieveTokenAccount, wallet, wallet, []));
     }
     tx.add(cleanupTx);
     return tx;
@@ -231,6 +232,6 @@ export async function claimRewardTx(farm: FarmInfo, wallet: PublicKey,connection
         tx.add(Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID,SABER_TOKEN_MINT,sbrTokenAccount,wallet,wallet))
     }
     tx.add(await ins.claimReward(farm,wallet))
-    tx.add(Token.createCloseAccountInstruction(TOKEN_PROGRAM_ID,iouTokenAccount,wallet,wallet,[]))
+    tx.add(Token.createCloseAccountInstruction(iouTokenAccount,wallet,wallet,[]))
     return tx;
 }

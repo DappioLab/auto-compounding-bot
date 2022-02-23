@@ -8,8 +8,9 @@ import {
     TOKEN_PROGRAM_ID,
     NATIVE_MINT,
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    Token,
 } from "@solana/spl-token";
+
+import * as Token from "@solana/spl-token"
 import BN from "bn.js";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { PoolInfo } from "./poolInfo";
@@ -44,7 +45,6 @@ export async function swap(
         tx.add(await wrapNative(amountIn, wallet, connection, true));
         cleanUpTx.add(
             Token.createCloseAccountInstruction(
-                TOKEN_PROGRAM_ID,
                 fromTokenAccount,
                 wallet,
                 wallet,
@@ -55,7 +55,6 @@ export async function swap(
     if (toMint.toString() == NATIVE_MINT.toString()) {
         cleanUpTx.add(
             Token.createCloseAccountInstruction(
-                TOKEN_PROGRAM_ID,
                 toTokenAccount,
                 wallet,
                 wallet,
@@ -152,7 +151,6 @@ export async function addLiquidity(
         tx.add(await wrapNative(maxCoinAmount, wallet, connection, true));
         cleanUpTx.add(
             Token.createCloseAccountInstruction(
-                TOKEN_PROGRAM_ID,
                 await findAssociatedTokenAddress(wallet, pool.coinMintAddress),
                 wallet,
                 wallet,
@@ -164,7 +162,6 @@ export async function addLiquidity(
         tx.add(await wrapNative(maxPcAmount, wallet, connection, true));
         cleanUpTx.add(
             Token.createCloseAccountInstruction(
-                TOKEN_PROGRAM_ID,
                 await findAssociatedTokenAddress(wallet, pool.pcMintAddress),
                 wallet,
                 wallet,
