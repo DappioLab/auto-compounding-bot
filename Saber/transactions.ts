@@ -1,12 +1,11 @@
-import { checkTokenAccount, createATAWithoutCheckIx, findAssociatedTokenAddress, wrapNative } from "../utils";
+import BN from "bn.js";
 import { NATIVE_MINT } from '@solana/spl-token';
 import * as Token from "@solana/spl-token"
-import BN from "bn.js";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import * as ins from "./instructions"
-import { SwapInfo, WrapInfo } from "./infos";
-import { FarmInfo, getMinerKey, minerCreated } from "./infos";
+import { SwapInfo, WrapInfo, FarmInfo, getMinerKey, minerCreated } from "./infos";
 import { IOU_TOKEN_MINT, SABER_TOKEN_MINT } from "./ids";
+import { checkTokenAccount, createATAWithoutCheckIx, findAssociatedTokenAddress, wrapNative } from "../utils";
 
 export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, BtokenAmount: BN, minimalRecieve: BN, wallet: PublicKey, connection: Connection) {
   const tx: Transaction = new Transaction();

@@ -1,8 +1,4 @@
-import {
-  Connection,
-  PublicKey,
-  AccountInfo
-} from "@solana/web3.js";
+import { Connection, PublicKey, AccountInfo } from "@solana/web3.js";
 import { parseV4PoolInfo } from "./infos"
 
 export { swap } from "./transaction";

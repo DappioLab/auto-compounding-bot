@@ -1,11 +1,10 @@
+import BN from "bn.js";
 import { PublicKey, TransactionInstruction } from "@solana/web3.js"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import BN from "bn.js";
 import { ADD_LIQUIDITY_LAYOUT, REMOVE_LIQUIDITY_LAYOUT, SWAP_LAYOUT } from "./layouts";
 
 export function swapInstruction(
   programId: PublicKey,
-  // tokenProgramId: PublicKey,
   // amm
   ammId: PublicKey,
   ammAuthority: PublicKey,
@@ -72,7 +71,6 @@ export function swapInstruction(
 
 export function addLiquidityInstruction(
   programId: PublicKey,
-  // tokenProgramId: PublicKey,
   // amm
   ammId: PublicKey,
   ammAuthority: PublicKey,
@@ -88,7 +86,6 @@ export function addLiquidityInstruction(
   userPcTokenAccount: PublicKey,
   userLpTokenAccount: PublicKey,
   userOwner: PublicKey,
-
   maxCoinAmount: BN,
   maxPcAmount: BN,
   fixedFromCoin: BN
@@ -129,7 +126,6 @@ export function addLiquidityInstruction(
 
 export function addLiquidityInstructionV4(
   programId: PublicKey,
-  // tokenProgramId: PublicKey,
   // amm
   ammId: PublicKey,
   ammAuthority: PublicKey,
@@ -145,7 +141,6 @@ export function addLiquidityInstructionV4(
   userPcTokenAccount: PublicKey,
   userLpTokenAccount: PublicKey,
   userOwner: PublicKey,
-
   maxCoinAmount: BN,
   maxPcAmount: BN,
   fixedFromCoin: BN
@@ -186,7 +181,6 @@ export function addLiquidityInstructionV4(
 
 export function removeLiquidityInstruction(
   programId: PublicKey,
-  // tokenProgramId: PublicKey,
   // amm
   ammId: PublicKey,
   ammAuthority: PublicKey,
@@ -250,7 +244,6 @@ export function removeLiquidityInstruction(
 
 export function removeLiquidityInstructionV4(
   programId: PublicKey,
-  // tokenProgramId: PublicKey,
   // amm
   ammId: PublicKey,
   ammAuthority: PublicKey,

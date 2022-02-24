@@ -1,10 +1,4 @@
-import {
-  Connection,
-  MemcmpFilter,
-  GetProgramAccountsConfig,
-  DataSizeFilter,
-  PublicKey
-} from "@solana/web3.js";
+import { Connection, MemcmpFilter, GetProgramAccountsConfig, DataSizeFilter, PublicKey } from "@solana/web3.js";
 import { ADMIN_KEY, DEPRECATED_POOLS, SABER_QUARRY_REWARDER, SWAP_PROGRAM_ID } from "./ids"
 import { SwapInfo, checkWrapped, getAllWrap, parseSwapInfoData, checkFarming, getAllFarms } from "./infos"
 

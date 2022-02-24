@@ -1,18 +1,10 @@
-import {
-  PublicKey,
-  SYSVAR_CLOCK_PUBKEY,
-  Transaction,
-  TransactionInstruction,
-  SystemProgram,
-} from '@solana/web3.js';
 import BN from 'bn.js';
-import { SwapInfo, WrapInfo } from './infos';
-import { publicKey, struct, u64, u128, u8, bool, u16 } from "@project-serum/borsh";
+import { PublicKey, SYSVAR_CLOCK_PUBKEY, Transaction, TransactionInstruction, SystemProgram } from '@solana/web3.js';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { SWAP_PROGRAM_ID ,SABER_WRAP_PROGRAM_ID ,QURARRY_MINE_PROGRAM_ID,SABER_QUARRY_REWARDER,SABER_FARM_MINTER,SABER_MINT_WRAPPER,QURARRY_MINT_WRAPPER, IOU_TOKEN_MINT, CLAIM_FEE_TOKEN_ACCOUNT, SABER_TOKEN_MINT, MINTER_PROGRAM_ID} from './ids';
-import { FarmInfo, getMinerKey } from './infos';
-import {findAssociatedTokenAddress} from '../utils'
 import { CREATE_MINER_LAYOUT, DEPOSIT_LAYPOUT, DEPOSIT_TO_FARM_LAYOUT, UNWRAP_LAYOUT, WITHDRAW_FROM_FARM_LAYOUT, WITHDRAW_LAYOUT, WRAP_LAYOUT } from './layouts';
+import { SwapInfo, WrapInfo, FarmInfo, getMinerKey } from './infos';
+import { findAssociatedTokenAddress } from '../utils'
 
 enum SaberInstruction {
   swap = 1,

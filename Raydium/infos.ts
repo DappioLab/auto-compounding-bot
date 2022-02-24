@@ -1,8 +1,7 @@
+import BN from "bn.js";
 import { OpenOrders } from "@project-serum/serum";
 import { Connection, PublicKey, AccountInfo } from "@solana/web3.js";
-import BN from "bn.js";
 import { parseTokenAccount } from "../utils";
-import { } from "./ids";
 import { AMM_INFO_LAYOUT_V4 } from "./layouts";
 
 export interface LiquidityPoolInfo {
