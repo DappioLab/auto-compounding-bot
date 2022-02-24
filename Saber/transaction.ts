@@ -1,4 +1,4 @@
-import { checkTokenAccount, findAssociatedTokenAddress, wrapNative } from "../util";
+import { checkTokenAccount, createATAWithoutCheckIx, findAssociatedTokenAddress, wrapNative } from "../util";
 import { TOKEN_PROGRAM_ID, NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID, } from '@solana/spl-token';
 import * as Token from "@solana/spl-token"
 import BN from "bn.js";
@@ -24,40 +24,30 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
     let cleanupTx = new Transaction;
     // check if Token A source account is created
     let AtokenSourceAccount = await findAssociatedTokenAddress(wallet, swapInfo.mintA);
-    let AtokenSourceAccountCreated = await checkTokenAccount(AtokenSourceAccount, connection)
 
-    if (!AtokenSourceAccountCreated) {
-        //if false add a create IX
-        let createAtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintA, AtokenSourceAccount, wallet, wallet);
-        tx.add(createAtokenAccount);
-    }
+
+
+    let createAtokenAccount = await createATAWithoutCheckIx(wallet, swapInfo.mintA);
+    tx.add(createAtokenAccount);
+
     // check if Token B source account is created
     let BtokenSourceAccount = await findAssociatedTokenAddress(wallet, swapInfo.mintB);
-    let BtokenSourceAccountCreated = await checkTokenAccount(BtokenSourceAccount, connection)
-    if (!BtokenSourceAccountCreated) {
-        //if false add a create IX
-        let createBtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintB, BtokenSourceAccount, wallet, wallet);
-        tx.add(createBtokenAccount);
-    }
+    let createBtokenAccount = await createATAWithoutCheckIx(wallet, swapInfo.mintB);
+    tx.add(createBtokenAccount);
+
     // check if LP Token account is created
     let LPtokenAccount = await findAssociatedTokenAddress(wallet, swapInfo.poolMint);
-    if (await checkTokenAccount(LPtokenAccount, connection)) { }
-    else {
-        //if false add a create IX
-        let createAtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.poolMint, LPtokenAccount, wallet, wallet);
-        tx.add(createAtokenAccount);
-    }
+
+    //if false add a create IX
+    let createLPtokenAccount = await await createATAWithoutCheckIx(wallet, swapInfo.poolMint);
+    tx.add(createLPtokenAccount);
+
     // check Token A is wSol
     if (swapInfo.mintA.toString() == NATIVE_MINT.toString()) {
         // if true add a wrapNative IX
         let wrapNativeIns = await wrapNative(AtokenAmount, wallet, connection, false);
         cleanupTx.add(Token.createCloseAccountInstruction(AtokenSourceAccount, wallet, wallet, []))
         tx.add(wrapNativeIns);
-    }
-    // if Token A source account is created in this tx
-    else if (!AtokenSourceAccountCreated) {
-        // add a close account IX
-        cleanupTx.add(Token.createCloseAccountInstruction(AtokenSourceAccount, wallet, wallet, []))
     }
     // check Token A is wSol
     if (swapInfo.mintB.toString() == NATIVE_MINT.toString()) {
@@ -66,24 +56,15 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
         cleanupTx.add(Token.createCloseAccountInstruction(BtokenSourceAccount, wallet, wallet, []))
         tx.add(wrapNativeIns);
     }
-    // if Token B source account is created in this tx
-    else if (!BtokenSourceAccountCreated) {
-        // add a close account IX
-        cleanupTx.add(Token.createCloseAccountInstruction(BtokenSourceAccount, wallet, wallet, []))
-    }
     // if Token A is wrapped
     if (swapInfo.mintAWrapped) {
         // check underlying tokan account is created
         let wrapMintAtokenAddress = await findAssociatedTokenAddress(wallet, swapInfo.mintAWrapInfo?.underlyingWrappedTokenMint as PublicKey);
-        if (!(await checkTokenAccount(wrapMintAtokenAddress, connection))) {
-            // if false add a create IX
-            let createAtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintAWrapInfo?.underlyingWrappedTokenMint as PublicKey, wrapMintAtokenAddress, wallet, wallet);
-            tx.add(createAtokenAccount);
-            // add a close account IX
-            cleanupTx.add(Token.createCloseAccountInstruction(wrapMintAtokenAddress, wallet, wallet, []))
-        }
+        let createAtokenAccount = await createATAWithoutCheckIx(wallet, swapInfo.mintAWrapInfo?.underlyingWrappedTokenMint as PublicKey);
+        tx.add(createAtokenAccount);
+
         let multiplyer = (new BN(swapInfo.mintAWrapInfo?.multiplyer as BN));
-        let wrapAIns = ins.wrapToken(swapInfo.mintAWrapInfo as wrapInfo, wallet, AtokenAmount.div(multiplyer),wrapMintAtokenAddress ,AtokenSourceAccount );
+        let wrapAIns = ins.wrapToken(swapInfo.mintAWrapInfo as wrapInfo, wallet, AtokenAmount.div(multiplyer), wrapMintAtokenAddress, AtokenSourceAccount);
 
         tx.add(wrapAIns);
     }
@@ -91,13 +72,10 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
     if (swapInfo.mintBWrapped == true) {
         // check underlying tokan account is created
         let wrapMintBtokenAddress = await findAssociatedTokenAddress(wallet, swapInfo.mintBWrapInfo?.underlyingWrappedTokenMint as PublicKey);
-        if (!(await checkTokenAccount(wrapMintBtokenAddress, connection))) {
-            // if false add a create IX
-            let createBtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.mintBWrapInfo?.underlyingWrappedTokenMint as PublicKey, wrapMintBtokenAddress, wallet, wallet);
-            tx.add(createBtokenAccount);
-            // add a close account IX
-            cleanupTx.add(Token.createCloseAccountInstruction(wrapMintBtokenAddress, wallet, wallet, []))
-        }
+
+        let createBtokenAccount = await createATAWithoutCheckIx(wallet, swapInfo.mintBWrapInfo?.underlyingWrappedTokenMint as PublicKey);
+        tx.add(createBtokenAccount);
+
         let multiplyer = (new BN(swapInfo.mintBWrapInfo?.multiplyer as BN))
         let wrapBIns = ins.wrapToken(swapInfo.mintBWrapInfo as wrapInfo, wallet, BtokenAmount.div(multiplyer), wrapMintBtokenAddress, BtokenSourceAccount);
 
@@ -108,7 +86,7 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
     tx.add(depositIns);
     if (swapInfo.isFarming) {
         let farm = swapInfo.farmingInfo as FarmInfo;
-        let depositToFarmIns = await depositToFarm(farm,wallet,minimalRecieve,connection);
+        let depositToFarmIns = await depositToFarm(farm, wallet, minimalRecieve, connection);
         tx.add(depositToFarmIns);
     }
 
@@ -119,31 +97,29 @@ export async function createDepositTx(swapInfo: SwapInfo, AtokenAmount: BN, Btok
 
 export async function depositToFarm(farm: FarmInfo, wallet: PublicKey, amount: BN, connection: Connection,) {
     let tx = new Transaction;
-    let createMinerIx = await createMiner(farm,wallet,connection);
+    let createMinerIx = await createMiner(farm, wallet, connection);
     tx.add(createMinerIx)
     let depositToFarm = await ins.depositToFarmIx(farm, wallet, amount);
     tx.add(depositToFarm);
     return tx;
 }
-export async function createMiner(farm: FarmInfo, wallet: PublicKey,connection: Connection) {
+export async function createMiner(farm: FarmInfo, wallet: PublicKey, connection: Connection) {
     let tx = new Transaction;
     let miner = await getMinerKey(wallet, farm.infoPubkey)
     let minerVault = await findAssociatedTokenAddress(miner[0], farm.tokenMintKey);
     if (!(await minerCreated(wallet, farm, connection))) {
-        if (!(await checkTokenAccount(minerVault, connection))) {
-            let createAtaIx = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, farm.tokenMintKey, minerVault, miner[0], wallet);
-            tx.add(createAtaIx)
-        }
+
+        let createAtaIx = await createATAWithoutCheckIx(wallet, farm.tokenMintKey);
+        tx.add(createAtaIx)
         let createMinerIx = await ins.createMinerAccountIx(farm as FarmInfo, wallet);
         tx.add(createMinerIx);
     }
     return tx
 }
-export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String,farmTokenAmount:BN, LPtokenAmount: BN, minimalRecieve: BN, wallet: PublicKey, connection: Connection) {
+export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String, farmTokenAmount: BN, LPtokenAmount: BN, minimalRecieve: BN, wallet: PublicKey, connection: Connection) {
     let tx: Transaction = new Transaction;
     let cleanupTx = new Transaction;
     let LPtokenSourceAccount = await findAssociatedTokenAddress(wallet, swapInfo.poolMint);
-    let LPtokenSourceAccountCreated = await checkTokenAccount(LPtokenSourceAccount, connection);
     let recieveTokenAccountMint = new PublicKey(0);
     if (tokenType == "A") {
         recieveTokenAccountMint = swapInfo.mintA;
@@ -151,39 +127,30 @@ export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String,far
     else if (tokenType == "B") {
         recieveTokenAccountMint = swapInfo.mintB;
     }
-    if (!LPtokenSourceAccountCreated) {
-        //if false add a create IX
-        let createLPtokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, swapInfo.poolMint, LPtokenSourceAccount, wallet, wallet);
-        tx.add(createLPtokenAccount);
-    }
+    let createLPtokenAccount = await createATAWithoutCheckIx(wallet, swapInfo.poolMint);
+    tx.add(createLPtokenAccount);
     let recieveTokenAccount = await findAssociatedTokenAddress(wallet, recieveTokenAccountMint);
-    let recieveTokenAccountCreated = await checkTokenAccount(recieveTokenAccount, connection)
+    let createrecieveTokenAccount = await createATAWithoutCheckIx(wallet, recieveTokenAccountMint);
+    tx.add(createrecieveTokenAccount);
 
-    if (!recieveTokenAccountCreated) {
-        //if false add a create IX
-        let createrecieveTokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, recieveTokenAccountMint, recieveTokenAccount, wallet, wallet);
-        tx.add(createrecieveTokenAccount);
-    }
-    if (swapInfo.isFarming){
+    if (swapInfo.isFarming) {
         let farm = swapInfo.farmingInfo as FarmInfo;
-        let withdrawFromfram = await withdrawFromMiner(farm,wallet,farmTokenAmount,connection,false);
+        let withdrawFromfram = await withdrawFromMiner(farm, wallet, farmTokenAmount, connection, false);
         tx.add(withdrawFromfram);
         LPtokenAmount = farmTokenAmount.add(LPtokenAmount);
     }
-    if (!LPtokenAmount.eq(new BN(0))){
+    if (!LPtokenAmount.eq(new BN(0))) {
         tx.add(ins.withdrawOne(swapInfo, tokenType, LPtokenAmount, minimalRecieve, wallet, LPtokenSourceAccount, recieveTokenAccount));
     }
 
     if (tokenType == "A" && swapInfo.mintAWrapped) {
         let wrappedmint = swapInfo.mintAWrapInfo?.underlyingWrappedTokenMint as PublicKey;
         let mintAUnderlyingTokenAccount = await findAssociatedTokenAddress(wallet, wrappedmint);
-        let mintAUnderlyingTokenAccountCreated = await checkTokenAccount(mintAUnderlyingTokenAccount, connection)
 
-        if (!mintAUnderlyingTokenAccountCreated) {
-            //if false add a create IX
-            let createmMintAUnderlyingTokenIx = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, wrappedmint, mintAUnderlyingTokenAccount, wallet, wallet);
-            tx.add(createmMintAUnderlyingTokenIx);
-        }
+        //if false add a create IX
+        let createmMintAUnderlyingTokenIx = await await createATAWithoutCheckIx(wallet, wrappedmint);
+        tx.add(createmMintAUnderlyingTokenIx);
+
         tx.add(ins.unwrapToken(swapInfo.mintAWrapInfo as wrapInfo, wallet, recieveTokenAccount, mintAUnderlyingTokenAccount))
     } else if (tokenType == "B" && swapInfo.mintBWrapped) {
         let wrappedmint = swapInfo.mintBWrapInfo?.underlyingWrappedTokenMint as PublicKey;
@@ -192,7 +159,7 @@ export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String,far
 
         if (!mintBUnderlyingTokenAccountCreated) {
             //if false add a create IX
-            let createMintBUnderlyingTokenAccount = await Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, wrappedmint, mintBUnderlyingTokenAccount, wallet, wallet);
+            let createMintBUnderlyingTokenAccount = await createATAWithoutCheckIx(wallet, wrappedmint);
             tx.add(createMintBUnderlyingTokenAccount);
         }
         tx.add(ins.unwrapToken(swapInfo.mintBWrapInfo as wrapInfo, wallet, recieveTokenAccount, mintBUnderlyingTokenAccount))
@@ -205,33 +172,30 @@ export async function createWithdrawTx(swapInfo: SwapInfo, tokenType: String,far
 }
 
 
-export async function withdrawFromMiner(farm: FarmInfo, wallet: PublicKey, amount: BN, connection: Connection , createLPaccount:boolean = true) {
+export async function withdrawFromMiner(farm: FarmInfo, wallet: PublicKey, amount: BN, connection: Connection, createLPaccount: boolean = true) {
     let tx = new Transaction
-    let withdrawTokenAccount = await findAssociatedTokenAddress(wallet,farm.tokenMintKey);
+    let withdrawTokenAccount = await findAssociatedTokenAddress(wallet, farm.tokenMintKey);
 
-    if (!amount.eq(new BN(0))){
-        if (!(await checkTokenAccount(withdrawTokenAccount,connection))&& createLPaccount){
-            tx.add(Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID,farm.tokenMintKey,withdrawTokenAccount,wallet,wallet));
-        }
-        let withdrawFromFarmIns =await ins.withdrawFromFarmIx(farm,wallet,amount);
+    if (!amount.eq(new BN(0))) {
+        tx.add(await createATAWithoutCheckIx(wallet, farm.tokenMintKey));
+
+        let withdrawFromFarmIns = await ins.withdrawFromFarmIx(farm, wallet, amount);
         tx.add(withdrawFromFarmIns)
     }
 
     return tx;
 }
-export async function claimRewardTx(farm: FarmInfo, wallet: PublicKey,connection:Connection) {
+export async function claimRewardTx(farm: FarmInfo, wallet: PublicKey, connection: Connection) {
     let tx = new Transaction;
-    let createMinerIx = await createMiner(farm,wallet,connection);
+    let createMinerIx = await createMiner(farm, wallet, connection);
     tx.add(createMinerIx);
-    let iouTokenAccount = await findAssociatedTokenAddress(wallet,IOU_TOKEN_MINT);
-    if(!(await checkTokenAccount(iouTokenAccount,connection))){
-        tx.add(Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID,IOU_TOKEN_MINT,iouTokenAccount,wallet,wallet))
-    }
-    let sbrTokenAccount = await findAssociatedTokenAddress(wallet,SABER_TOKEN_MINT);
-    if(!(await checkTokenAccount(sbrTokenAccount,connection))){
-        tx.add(Token.createAssociatedTokenAccountInstruction(ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID,SABER_TOKEN_MINT,sbrTokenAccount,wallet,wallet))
-    }
-    tx.add(await ins.claimReward(farm,wallet))
-    tx.add(Token.createCloseAccountInstruction(iouTokenAccount,wallet,wallet,[]))
+    let iouTokenAccount = await findAssociatedTokenAddress(wallet, IOU_TOKEN_MINT);
+    tx.add(await createATAWithoutCheckIx(wallet, IOU_TOKEN_MINT))
+
+    let sbrTokenAccount = await findAssociatedTokenAddress(wallet, SABER_TOKEN_MINT);
+    tx.add(await createATAWithoutCheckIx(wallet, SABER_TOKEN_MINT))
+
+    tx.add(await ins.claimReward(farm, wallet))
+    tx.add(Token.createCloseAccountInstruction(iouTokenAccount, wallet, wallet, []))
     return tx;
 }
