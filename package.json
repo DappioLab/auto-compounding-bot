@@ -1,5 +1,5 @@
 {
-  "name": "Solana_bot",
+  "name": "auto-compounding-bot",
   "version": "1.0.0",
   "description": "",
   "main": "./index.ts",
