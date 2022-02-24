@@ -1,10 +1,4 @@
-import {
-  publicKey,
-  struct,
-  u8,
-  u64,
-  u128,
-} from "@project-serum/borsh";
+import { publicKey, struct, u8, u64, u128 } from "@project-serum/borsh";
 
 export const SWAP_LAYOUT = struct([
   u8('instruction'),

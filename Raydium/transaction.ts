@@ -1,22 +1,12 @@
-import {
-  createATAWithoutCheckIx,
-  findAssociatedTokenAddress,
-  wrapNative,
-} from "../utils";
-import {
-  NATIVE_MINT,
-} from "@solana/spl-token";
-import * as Token from "@solana/spl-token"
 import BN from "bn.js";
+import { Market } from "@project-serum/serum";
+import { NATIVE_MINT } from "@solana/spl-token";
+import * as Token from "@solana/spl-token"
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { PoolInfo } from "./infos";
-import { Market } from "@project-serum/serum";
 import * as ixs from "./instructions";
-import {
-  AMM_AUTHORITY,
-  LIQUIDITY_POOL_PROGRAM_ID_V3,
-  LIQUIDITY_POOL_PROGRAM_ID_V4,
-} from "./ids";
+import { AMM_AUTHORITY, LIQUIDITY_POOL_PROGRAM_ID_V3, LIQUIDITY_POOL_PROGRAM_ID_V4 } from "./ids";
+import { createATAWithoutCheckIx, findAssociatedTokenAddress, wrapNative } from "../utils";
 
 export async function swap(
   pool: PoolInfo,

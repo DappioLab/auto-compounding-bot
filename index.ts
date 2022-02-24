@@ -1,15 +1,12 @@
-import {
-  Connection,
-  Keypair,
-} from "@solana/web3.js";
-import fs from "fs";
 import os from "os";
-import * as saber from "./saber";
-import * as raydium from "./raydium";
+import fs from "fs";
 import BN from "bn.js";
-import * as utils from "./utils";
+import { Connection, Keypair } from "@solana/web3.js";
+import * as raydium from "./raydium";
 import { SBR_AMM_ID } from "./raydium/ids";
+import * as saber from "./saber";
 import { SBR_MINT, USDC_UST_POOL } from "./saber/ids";
+import * as utils from "./utils";
 
 // Load keypair
 const keyPairPath = `${os.homedir()}/.config/solana/id.json`;
@@ -20,15 +17,15 @@ const wallet = Keypair.fromSecretKey(privateKey);
 async function main() {
   const conn = new Connection("https://rpc-mainnet-fork.dappio.xyz", { wsEndpoint: "wss://rpc-mainnet-fork.dappio.xyz/ws", commitment: "processed", });
   // const connection = new Connection("https://solana-api.tt-prod.net", { commitment: "processed", });
-  console.log("Fetching All Saber SwapInfos...");
+  console.log("Fetching all Saber pools...");
   const swaps = await saber.getAllSwaps(conn);
-  console.log("Fetching All Saber Miners...");
+  console.log("Fetching all Saber miners...");
   const miners = await saber.getAllMiners(conn, wallet.publicKey);
-  console.log("Fetching Saber AMM Pool on Raydium...");
+  console.log("Fetching Saber AMM pool on Raydium...");
   const sbrAmm = (await raydium.getAmmPool(SBR_AMM_ID, conn));
 
   // Claim All mining rewards
-  console.log("Claiming All mining rewards...")
+  console.log("Claiming all mining rewards...")
   for (const miner of miners) {
     for (const swap of swaps) {
       if (miner.farmKey.toString() === swap.farmingInfo?.infoPubkey.toString()) {
@@ -37,7 +34,7 @@ async function main() {
           const claimRewardTx = await saber.claimRewardTx(swap.farmingInfo as saber.FarmInfo, wallet.publicKey, conn)
           // Send Tx
           const result = await utils.signAndSendAll(claimRewardTx, conn, wallet)
-          console.log(miner.getUnclaimedRewards(swap), "SBR Reward Claimed. Tx:", result);
+          console.log(miner.getUnclaimedRewards(swap), "SBR reward claimed. Tx:", result);
         }
       }
     }
@@ -80,7 +77,7 @@ async function main() {
         const farmIx = await saber.depositToFarm(swap.farmingInfo as saber.FarmInfo, wallet.publicKey, token.amount, conn)
         // Send Tx
         const result = await utils.signAndSendAll(farmIx, conn, wallet)
-        console.log("Farm Deposited. Tx:", result);
+        console.log("Farm deposited. Tx:", result);
       }
     }
   }
