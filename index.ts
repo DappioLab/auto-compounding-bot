@@ -76,4 +76,14 @@ async function main() {
 
 }
 
-main();
+
+async function tryCatch() {
+  try {
+    main();
+  }
+  catch {
+    console.log("Error");
+  }
+}
+tryCatch();
+//setInterval(tryCatch, 1000 * 60 * 10);
