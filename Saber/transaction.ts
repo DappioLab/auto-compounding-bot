@@ -109,7 +109,7 @@ export async function createMiner(farm: FarmInfo, wallet: PublicKey, connection:
     let minerVault = await findAssociatedTokenAddress(miner[0], farm.tokenMintKey);
     if (!(await minerCreated(wallet, farm, connection))) {
 
-        let createAtaIx = await createATAWithoutCheckIx(wallet, farm.tokenMintKey);
+        let createAtaIx = await createATAWithoutCheckIx(miner[0], farm.tokenMintKey,wallet);
         tx.add(createAtaIx)
         let createMinerIx = await ins.createMinerAccountIx(farm as FarmInfo, wallet);
         tx.add(createMinerIx);
