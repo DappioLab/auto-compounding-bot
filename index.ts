@@ -45,10 +45,13 @@ async function main() {
   //Swap all SBR to USDC
   for (let token of tokenAccounts) {
     if (token.mint.toString() == "Saber2gLauYim4Mvftnrasomsv6NvAuncvMEZwcLpD1" && token.amount.cmpn(0)) {
-
+      swapOutAmount = await (await sbrAmm.calculateSwapOutAmount("coin", token.amount, connection)).divn(0.98);
+      if (!swapOutAmount.cmpn(1)) {
+        break;
+      }
       let swapIx = await ray.swap(sbrAmm, token.mint, sbrAmm.pcMintAddress, walletPublicKey, token.amount, new BN(0), connection)
       let result = await util.signAndSendAll(swapIx, connection, wallet)
-      swapOutAmount = await (await sbrAmm.calculateSwapOutAmount("coin", token.amount, connection)).divn(0.98);
+      
       console.log(token.amount.toNumber() / 1000000, "SBR swapped\nTX:", result);
     }
   }
