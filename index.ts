@@ -9,14 +9,14 @@ import { SBR_MINT, USDC_UST_POOL } from "./saber/ids";
 import * as utils from "./utils";
 
 // Load keypair
-const keyPairPath = `${os.homedir()}/.config/solana/id.json`;
+const keyPairPath = `${os.homedir()}/.config/solana/solmeet-keypair-1.json`;
 const privateKeyUint8Array = JSON.parse(fs.readFileSync(keyPairPath, "utf-8"));
 const privateKey = Uint8Array.from(privateKeyUint8Array);
 const wallet = Keypair.fromSecretKey(privateKey);
 
 async function main() {
   const conn = new Connection("https://rpc-mainnet-fork.dappio.xyz", { wsEndpoint: "wss://rpc-mainnet-fork.dappio.xyz/ws", commitment: "processed", });
-  // const connection = new Connection("https://solana-api.tt-prod.net", { commitment: "processed", });
+  // const conn = new Connection("https://solana-api.tt-prod.net", { commitment: "processed", });
   console.log("Fetching all Saber pools...");
   const swaps = await saber.getAllSwaps(conn);
   console.log("Fetching all Saber miners...");
@@ -24,7 +24,7 @@ async function main() {
   console.log("Fetching Saber AMM pool on Raydium...");
   const sbrAmm = (await raydium.getAmmPool(SBR_AMM_ID, conn));
 
-  // Claim All mining rewards
+  // Claim all mining rewards
   console.log("Claiming all mining rewards...")
   for (const miner of miners) {
     for (const swap of swaps) {
