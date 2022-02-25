@@ -165,9 +165,9 @@ export async function createATAWithoutCheckIx(wallet: PublicKey, mint: PublicKey
   });
 }
 
-export function getAnchorInsByIdl(name: string, old?: boolean): Buffer {
+export function getAnchorInsByIdl(name: string): Buffer {
   const SIGHASH_GLOBAL_NAMESPACE = "global";
-  const preimage = old ? `${SIGHASH_GLOBAL_NAMESPACE}::${name}` : `${SIGHASH_GLOBAL_NAMESPACE}:${name}`;
+  const preimage = `${SIGHASH_GLOBAL_NAMESPACE}:${name}`;
   const hash = sha256.sha256.digest(preimage)
   const data = Buffer.from(hash).slice(0, 8)
   return data;
