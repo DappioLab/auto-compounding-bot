@@ -2,7 +2,7 @@ import BN from "bn.js";
 import * as sha256 from "js-sha256"
 import { PublicKey, Transaction, TransactionInstruction, SystemProgram, Connection, SYSVAR_RENT_PUBKEY, Keypair, sendAndConfirmTransaction } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { publicKey, struct, u64, u32 } from "@project-serum/borsh";
+import { publicKey, struct, u64, u32,u8 } from "@project-serum/borsh";
 
 const ATA_INIT_PROGRAM_ID = new PublicKey("9tiP8yZcekzfGzSBmp7n9LaDHRjxP2w7wJj8tpPJtfG");
 
@@ -10,12 +10,21 @@ const TOKEN_LAYOUT = struct([
   publicKey("mint"),
   publicKey("owner"),
   u64("amount"),
+  u32("delegateOption"),
+  publicKey("delegate"),
+  u8('state'),
+  u32('isNativeOption'),
+  u64('isNative'),
+  u64('delegatedAmount'),
+  u32('closeAuthorityOption'),
+  publicKey('closeAuthority'),
 ]);
 
 const MINT_LAYOUT = struct([
   u32("option"),
   publicKey("authority"),
   u64("amount"),
+  u8('decimals'),
 ]);
 
 class TokenAccount {
