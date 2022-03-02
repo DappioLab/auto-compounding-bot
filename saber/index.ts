@@ -2,7 +2,6 @@ import { Connection, MemcmpFilter, GetProgramAccountsConfig, DataSizeFilter, Pub
 import { ADMIN_KEY, DEPRECATED_POOLS, SABER_QUARRY_REWARDER, SWAP_PROGRAM_ID } from "./ids"
 import { SwapInfo, checkWrapped, getAllWrap, parseSwapInfoData, checkFarming, getAllFarms } from "./infos"
 
-export { createDepositTx, createWithdrawTx, depositToFarm, claimRewardTx } from './transactions';
 export { FarmInfo, getAllMiners, defaultMiner } from './infos';
 
 export async function getAllSwaps(conn: Connection): Promise<SwapInfo[]> {

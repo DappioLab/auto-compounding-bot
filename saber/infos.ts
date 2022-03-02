@@ -84,8 +84,8 @@ export function parseFarmInfo(data:any, farmPubkey:PublicKey): FarmInfo {
 export async function getAllFarms(connection:Connection, rewarderKey:PublicKey): Promise<FarmInfo[]> {
   const adminIdMemcmp: MemcmpFilter = {
     memcmp: {
-    offset: 8,
-    bytes: rewarderKey.toString(),
+      offset: 8,
+      bytes: rewarderKey.toString(),
     }
   };
   const sizeFilter: DataSizeFilter = {
