@@ -1,12 +1,20 @@
 import BN from "bn.js";
 import { Market } from "@project-serum/serum";
 import { NATIVE_MINT } from "@solana/spl-token";
-import * as Token from "@solana/spl-token"
+import * as Token from "@solana/spl-token";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { PoolInfo } from "./infos";
 import * as ixs from "./instructions";
-import { AMM_AUTHORITY, LIQUIDITY_POOL_PROGRAM_ID_V3, LIQUIDITY_POOL_PROGRAM_ID_V4 } from "./ids";
-import { createATAWithoutCheckIx, findAssociatedTokenAddress, wrapNative } from "../utils";
+import {
+  AMM_AUTHORITY,
+  LIQUIDITY_POOL_PROGRAM_ID_V3,
+  LIQUIDITY_POOL_PROGRAM_ID_V4,
+} from "./ids";
+import {
+  createATAWithoutCheckIx,
+  findAssociatedTokenAddress,
+  wrapNative,
+} from "../utils";
 
 export async function swap(
   pool: PoolInfo,
@@ -16,7 +24,7 @@ export async function swap(
   amountIn: BN,
   minAmountOut: BN,
   connection: Connection,
-  fromTokenAccount?: PublicKey,
+  fromTokenAccount?: PublicKey
 ): Promise<Transaction> {
   const tx = new Transaction();
   const cleanUpTx = new Transaction();
@@ -30,29 +38,19 @@ export async function swap(
   if (fromMint.toString() === NATIVE_MINT.toString()) {
     tx.add(await wrapNative(amountIn, wallet));
     cleanUpTx.add(
-      Token.createCloseAccountInstruction(
-      fromTokenAccount,
-      wallet,
-      wallet,
-      [],
-      ),
+      Token.createCloseAccountInstruction(fromTokenAccount, wallet, wallet, [])
     );
   }
   if (toMint.toString() === NATIVE_MINT.toString()) {
     cleanUpTx.add(
-      Token.createCloseAccountInstruction(
-      toTokenAccount,
-      wallet,
-      wallet,
-      [],
-      ),
+      Token.createCloseAccountInstruction(toTokenAccount, wallet, wallet, [])
     );
   }
   const serumMarket = await Market.load(
     connection,
     pool.serumMarket,
     undefined,
-    pool.serumProgramId,
+    pool.serumProgramId
   );
   let programId = PublicKey.default;
   if (pool.version === 3) {
@@ -65,7 +63,7 @@ export async function swap(
       serumMarket.address.toBuffer(),
       serumMarket.decoded.vaultSignerNonce.toArrayLike(Buffer, "le", 8),
     ],
-    serumMarket.programId,
+    serumMarket.programId
   );
   const swapIxs = ixs.swapInstruction(
     programId,
@@ -87,7 +85,7 @@ export async function swap(
     toTokenAccount,
     wallet,
     amountIn,
-    minAmountOut,
+    minAmountOut
   );
   tx.add(swapIxs);
   tx.add(cleanUpTx);

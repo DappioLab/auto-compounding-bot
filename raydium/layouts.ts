@@ -1,21 +1,21 @@
 import { publicKey, struct, u8, u64, u128 } from "@project-serum/borsh";
 
 export const SWAP_LAYOUT = struct([
-  u8('instruction'),
-  u64('amountIn'),
-  u64('minAmountOut')
+  u8("instruction"),
+  u64("amountIn"),
+  u64("minAmountOut"),
 ]);
 
 export const ADD_LIQUIDITY_LAYOUT = struct([
-  u8('instruction'),
-  u64('maxCoinAmount'),
-  u64('maxPcAmount'),
-  u64('fixedFromCoin')
+  u8("instruction"),
+  u64("maxCoinAmount"),
+  u64("maxPcAmount"),
+  u64("fixedFromCoin"),
 ]);
 
 export const REMOVE_LIQUIDITY_LAYOUT = struct([
-  u8('instruction'),
-  u64('amount')
+  u8("instruction"),
+  u64("amount"),
 ]);
 
 export const AMM_INFO_LAYOUT_V4 = struct([

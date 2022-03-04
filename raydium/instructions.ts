@@ -1,7 +1,11 @@
 import BN from "bn.js";
-import { PublicKey, TransactionInstruction } from "@solana/web3.js"
+import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { ADD_LIQUIDITY_LAYOUT, REMOVE_LIQUIDITY_LAYOUT, SWAP_LAYOUT } from "./layouts";
+import {
+  ADD_LIQUIDITY_LAYOUT,
+  REMOVE_LIQUIDITY_LAYOUT,
+  SWAP_LAYOUT,
+} from "./layouts";
 
 export function swapInstruction(
   programId: PublicKey,
@@ -49,24 +53,24 @@ export function swapInstruction(
     { pubkey: serumVaultSigner, isSigner: false, isWritable: false },
     { pubkey: userSourceTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userDestTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: userOwner, isSigner: true, isWritable: false }
-  ]
+    { pubkey: userOwner, isSigner: true, isWritable: false },
+  ];
 
-  const data = Buffer.alloc(SWAP_LAYOUT.span)
+  const data = Buffer.alloc(SWAP_LAYOUT.span);
   SWAP_LAYOUT.encode(
     {
       instruction: 9,
       amountIn,
-      minAmountOut
+      minAmountOut,
     },
     data
-  )
+  );
 
   return new TransactionInstruction({
     keys,
     programId,
-    data
-  })
+    data,
+  });
 }
 
 export function addLiquidityInstruction(
@@ -103,25 +107,25 @@ export function addLiquidityInstruction(
     { pubkey: userCoinTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userPcTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userLpTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: userOwner, isSigner: true, isWritable: false }
-  ]
+    { pubkey: userOwner, isSigner: true, isWritable: false },
+  ];
 
-  const data = Buffer.alloc(ADD_LIQUIDITY_LAYOUT.span)
+  const data = Buffer.alloc(ADD_LIQUIDITY_LAYOUT.span);
   ADD_LIQUIDITY_LAYOUT.encode(
     {
       instruction: 3,
       maxCoinAmount,
       maxPcAmount,
-      fixedFromCoin
+      fixedFromCoin,
     },
     data
-  )
+  );
 
   return new TransactionInstruction({
     keys,
     programId,
-    data
-  })
+    data,
+  });
 }
 
 export function addLiquidityInstructionV4(
@@ -158,25 +162,25 @@ export function addLiquidityInstructionV4(
     { pubkey: userCoinTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userPcTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userLpTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: userOwner, isSigner: true, isWritable: false }
-  ]
+    { pubkey: userOwner, isSigner: true, isWritable: false },
+  ];
 
-  const data = Buffer.alloc(ADD_LIQUIDITY_LAYOUT.span)
+  const data = Buffer.alloc(ADD_LIQUIDITY_LAYOUT.span);
   ADD_LIQUIDITY_LAYOUT.encode(
     {
       instruction: 3,
       maxCoinAmount,
       maxPcAmount,
-      fixedFromCoin
+      fixedFromCoin,
     },
     data
-  )
+  );
 
   return new TransactionInstruction({
     keys,
     programId,
-    data
-  })
+    data,
+  });
 }
 
 export function removeLiquidityInstruction(
@@ -223,23 +227,23 @@ export function removeLiquidityInstruction(
     { pubkey: userLpTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userCoinTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userPcTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: userOwner, isSigner: true, isWritable: false }
-  ]
+    { pubkey: userOwner, isSigner: true, isWritable: false },
+  ];
 
-  const data = Buffer.alloc(REMOVE_LIQUIDITY_LAYOUT.span)
+  const data = Buffer.alloc(REMOVE_LIQUIDITY_LAYOUT.span);
   REMOVE_LIQUIDITY_LAYOUT.encode(
     {
       instruction: 4,
-      amount
+      amount,
     },
     data
-  )
+  );
 
   return new TransactionInstruction({
     keys,
     programId,
-    data
-  })
+    data,
+  });
 }
 
 export function removeLiquidityInstructionV4(
@@ -286,21 +290,21 @@ export function removeLiquidityInstructionV4(
     { pubkey: userLpTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userCoinTokenAccount, isSigner: false, isWritable: true },
     { pubkey: userPcTokenAccount, isSigner: false, isWritable: true },
-    { pubkey: userOwner, isSigner: true, isWritable: false }
-  ]
+    { pubkey: userOwner, isSigner: true, isWritable: false },
+  ];
 
-  const data = Buffer.alloc(REMOVE_LIQUIDITY_LAYOUT.span)
+  const data = Buffer.alloc(REMOVE_LIQUIDITY_LAYOUT.span);
   REMOVE_LIQUIDITY_LAYOUT.encode(
     {
       instruction: 4,
-      amount
+      amount,
     },
     data
-  )
+  );
 
   return new TransactionInstruction({
     keys,
     programId,
-    data
-  })
+    data,
+  });
 }

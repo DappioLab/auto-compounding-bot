@@ -1,10 +1,25 @@
 import BN from "bn.js";
-import * as sha256 from "js-sha256"
-import { PublicKey, Transaction, TransactionInstruction, SystemProgram, Connection, SYSVAR_RENT_PUBKEY, Keypair, sendAndConfirmTransaction } from "@solana/web3.js";
-import { TOKEN_PROGRAM_ID, NATIVE_MINT, ASSOCIATED_TOKEN_PROGRAM_ID } from "@solana/spl-token";
-import { publicKey, struct, u64, u32,u8 } from "@project-serum/borsh";
+import * as sha256 from "js-sha256";
+import {
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  SystemProgram,
+  Connection,
+  SYSVAR_RENT_PUBKEY,
+  Keypair,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
+import {
+  TOKEN_PROGRAM_ID,
+  NATIVE_MINT,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { publicKey, struct, u64, u32, u8 } from "@project-serum/borsh";
 
-const ATA_INIT_PROGRAM_ID = new PublicKey("9tiP8yZcekzfGzSBmp7n9LaDHRjxP2w7wJj8tpPJtfG");
+const ATA_INIT_PROGRAM_ID = new PublicKey(
+  "9tiP8yZcekzfGzSBmp7n9LaDHRjxP2w7wJj8tpPJtfG"
+);
 
 const TOKEN_LAYOUT = struct([
   publicKey("mint"),
@@ -12,19 +27,19 @@ const TOKEN_LAYOUT = struct([
   u64("amount"),
   u32("delegateOption"),
   publicKey("delegate"),
-  u8('state'),
-  u32('isNativeOption'),
-  u64('isNative'),
-  u64('delegatedAmount'),
-  u32('closeAuthorityOption'),
-  publicKey('closeAuthority'),
+  u8("state"),
+  u32("isNativeOption"),
+  u64("isNative"),
+  u64("delegatedAmount"),
+  u32("closeAuthorityOption"),
+  publicKey("closeAuthority"),
 ]);
 
 const MINT_LAYOUT = struct([
   u32("option"),
   publicKey("authority"),
   u64("amount"),
-  u8('decimals'),
+  u8("decimals"),
 ]);
 
 class TokenAccount {
@@ -36,7 +51,7 @@ class TokenAccount {
     infoPubkey: PublicKey,
     mint: PublicKey,
     owner: PublicKey,
-    amount: BN,
+    amount: BN
   ) {
     this.infoPubkey = infoPubkey;
     this.mint = mint;
@@ -47,41 +62,49 @@ class TokenAccount {
 
 export async function checkTokenAccount(
   publickey: PublicKey,
-  connection: Connection,
+  connection: Connection
 ): Promise<boolean> {
   const accountInfo = await connection.getAccountInfo(publickey);
-  return ((accountInfo?.owner.toString() === TOKEN_PROGRAM_ID.toString()));
+  return accountInfo?.owner.toString() === TOKEN_PROGRAM_ID.toString();
 }
 
-export function parseTokenAccount(data: any, infoPubkey: PublicKey): TokenAccount {
+export function parseTokenAccount(
+  data: any,
+  infoPubkey: PublicKey
+): TokenAccount {
   const tokenAccountInfo = TOKEN_LAYOUT.decode(data);
-  const {
-    mint, owner, amount
-  } = tokenAccountInfo
-  return new TokenAccount(infoPubkey, mint, owner, amount)
+  const { mint, owner, amount } = tokenAccountInfo;
+  return new TokenAccount(infoPubkey, mint, owner, amount);
 }
 
 export async function getTokenAccount(
   connection: Connection,
-  tokenAccountPubkey: PublicKey,
+  tokenAccountPubkey: PublicKey
 ): Promise<TokenAccount> {
   const accountInfo = await connection.getAccountInfo(tokenAccountPubkey);
-  return parseTokenAccount(accountInfo?.data, tokenAccountPubkey)
+  return parseTokenAccount(accountInfo?.data, tokenAccountPubkey);
 }
 
-export async function getAllTokenAccount(wallet: PublicKey, connection: Connection): Promise<TokenAccount[]> {
-  const tokenAccountInfos = await (await connection.getTokenAccountsByOwner(wallet, { programId: TOKEN_PROGRAM_ID })).value;
+export async function getAllTokenAccount(
+  wallet: PublicKey,
+  connection: Connection
+): Promise<TokenAccount[]> {
+  const tokenAccountInfos = await (
+    await connection.getTokenAccountsByOwner(wallet, {
+      programId: TOKEN_PROGRAM_ID,
+    })
+  ).value;
   const tokenAccounts = [];
   for (const info of tokenAccountInfos) {
     const tokenAccount = parseTokenAccount(info.account.data, info.pubkey);
-    tokenAccounts.push(tokenAccount)
+    tokenAccounts.push(tokenAccount);
   }
   return tokenAccounts;
 }
 
 export async function getTokenAccountAmount(
   connection: Connection,
-  tokenAccountPubkey: PublicKey,
+  tokenAccountPubkey: PublicKey
 ): Promise<BN> {
   const accountInfo = await connection.getAccountInfo(tokenAccountPubkey);
   const tokenAccountInfo = TOKEN_LAYOUT.decode(accountInfo?.data);
@@ -90,7 +113,7 @@ export async function getTokenAccountAmount(
 
 export async function getTokenSupply(
   connection: Connection,
-  tokenMintPubkey: PublicKey,
+  tokenMintPubkey: PublicKey
 ): Promise<BN> {
   const accountInfo = await connection.getAccountInfo(tokenMintPubkey);
   const mintAccountInfo = MINT_LAYOUT.decode(accountInfo?.data);
@@ -99,15 +122,15 @@ export async function getTokenSupply(
 
 export async function wrapNative(
   amount: BN,
-  walletPublicKey: PublicKey,
+  walletPublicKey: PublicKey
 ): Promise<Transaction> {
   const tx = new Transaction();
   const destinationAta = await findAssociatedTokenAddress(
     walletPublicKey,
-    NATIVE_MINT,
+    NATIVE_MINT
   );
-  const createATA = await createATAWithoutCheckIx(walletPublicKey, NATIVE_MINT)
-  tx.add(createATA)
+  const createATA = await createATAWithoutCheckIx(walletPublicKey, NATIVE_MINT);
+  tx.add(createATA);
   const transferPram = {
     fromPubkey: walletPublicKey,
     lamports: amount.toNumber(),
@@ -129,7 +152,7 @@ export async function wrapNative(
 
 export async function findAssociatedTokenAddress(
   walletAddress: PublicKey,
-  tokenMintAddress: PublicKey,
+  tokenMintAddress: PublicKey
 ): Promise<PublicKey> {
   return (
     await PublicKey.findProgramAddress(
@@ -138,14 +161,18 @@ export async function findAssociatedTokenAddress(
         TOKEN_PROGRAM_ID.toBuffer(),
         tokenMintAddress.toBuffer(),
       ],
-      ASSOCIATED_TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
     )
   )[0];
 }
 
-export async function createATAWithoutCheckIx(wallet: PublicKey, mint: PublicKey, payer?: PublicKey): Promise<TransactionInstruction> {
+export async function createATAWithoutCheckIx(
+  wallet: PublicKey,
+  mint: PublicKey,
+  payer?: PublicKey
+): Promise<TransactionInstruction> {
   if (payer === undefined) {
-    payer = wallet as PublicKey
+    payer = wallet as PublicKey;
   }
   payer = payer as PublicKey;
   const ATA = await findAssociatedTokenAddress(wallet, mint);
@@ -168,15 +195,19 @@ export async function createATAWithoutCheckIx(wallet: PublicKey, mint: PublicKey
 export function getAnchorInsByIdl(name: string): Buffer {
   const SIGHASH_GLOBAL_NAMESPACE = "global";
   const preimage = `${SIGHASH_GLOBAL_NAMESPACE}:${name}`;
-  const hash = sha256.sha256.digest(preimage)
-  const data = Buffer.from(hash).slice(0, 8)
+  const hash = sha256.sha256.digest(preimage);
+  const data = Buffer.from(hash).slice(0, 8);
   return data;
 }
 
-export async function signAndSendAll(allTx: Transaction, connection: Connection, wallet: Keypair): Promise<string> {
+export async function signAndSendAll(
+  allTx: Transaction,
+  connection: Connection,
+  wallet: Keypair
+): Promise<string> {
   const walletPublicKey = wallet.publicKey;
   const tx = new Transaction();
-  tx.add(allTx)
+  tx.add(allTx);
   const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
   tx.recentBlockhash = recentBlockhash;
   tx.feePayer = walletPublicKey;

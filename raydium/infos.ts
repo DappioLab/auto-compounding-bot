@@ -131,7 +131,7 @@ export class PoolInfo implements LiquidityPoolInfo {
     ammOwner: PublicKey,
     pnlOwner: PublicKey,
     srmTokenAccount?: PublicKey,
-    ammQuantities?: PublicKey,
+    ammQuantities?: PublicKey
   ) {
     this.totalPnlPc = totalPnlPc;
     this.totalPnlCoin = totalPnlCoin;
@@ -173,15 +173,19 @@ export class PoolInfo implements LiquidityPoolInfo {
     this.pnlOwner = pnlOwner;
     this.srmTokenAccount = srmTokenAccount;
   }
-  async calculateSwapOutAmount(fromSide: string, amountIn: BN, connection: Connection) {
+  async calculateSwapOutAmount(
+    fromSide: string,
+    amountIn: BN,
+    connection: Connection
+  ) {
     const pool = await this.updatePoolAmount(connection);
     if (fromSide === "coin") {
       const x1 = pool.coinAccountAmount
-      ?.add(pool.ammOrderbaseTokenTotal as BN)
-      .sub(pool.needTakePnlCoin) as BN;
+        ?.add(pool.ammOrderbaseTokenTotal as BN)
+        .sub(pool.needTakePnlCoin) as BN;
       const y1 = pool.pcAccountAmount
-      ?.add(pool.ammOrderquoteTokenTotal as BN)
-      .sub(pool.needTakePnlPc) as BN;
+        ?.add(pool.ammOrderquoteTokenTotal as BN)
+        .sub(pool.needTakePnlPc) as BN;
       const k = x1.mul(y1);
       const x2 = x1.add(amountIn);
       const y2 = k.div(x2);
@@ -190,11 +194,11 @@ export class PoolInfo implements LiquidityPoolInfo {
       return amountOut;
     } else if (fromSide === "pc") {
       const x1 = pool.pcAccountAmount
-      ?.add(pool.ammOrderquoteTokenTotal as BN)
-      .sub(pool.needTakePnlPc) as BN;
+        ?.add(pool.ammOrderquoteTokenTotal as BN)
+        .sub(pool.needTakePnlPc) as BN;
       const y1 = pool.coinAccountAmount
-      ?.add(pool.ammOrderbaseTokenTotal as BN)
-      .sub(pool.needTakePnlCoin) as BN;
+        ?.add(pool.ammOrderbaseTokenTotal as BN)
+        .sub(pool.needTakePnlCoin) as BN;
       const k = x1.mul(y1);
       const x2 = x1.add(amountIn);
       const y2 = k.div(x2);
@@ -211,23 +215,17 @@ export class PoolInfo implements LiquidityPoolInfo {
     accounts.push(this.poolCoinTokenAccount);
     accounts.push(this.ammOpenOrders);
     const infos = (await connection.getMultipleAccountsInfo(
-      accounts,
+      accounts
     )) as AccountInfo<Buffer>[];
 
-    const pc = parseTokenAccount(
-      infos[0].data,
-      accounts[0],
-    );
+    const pc = parseTokenAccount(infos[0].data, accounts[0]);
     this.pcAccountAmount = pc.amount;
-    const coin = parseTokenAccount(
-      infos[1].data,
-      accounts[1],
-    );
+    const coin = parseTokenAccount(infos[1].data, accounts[1]);
     this.coinAccountAmount = coin.amount;
     const ammOrder = OpenOrders.fromAccountInfo(
       accounts[2],
       infos[2],
-      this.serumProgramId,
+      this.serumProgramId
     );
     this.ammOrderquoteTokenTotal = ammOrder.quoteTokenTotal;
     this.ammOrderbaseTokenTotal = ammOrder.baseTokenTotal;
@@ -326,13 +324,13 @@ export function parseV4PoolInfo(data: any, infoPubkey: PublicKey) {
     poolWithdrawQueue,
     poolTempLpTokenAccount,
     ammOwner,
-    pnlOwner,
+    pnlOwner
   );
 }
 
 export async function updateAllTokenAmount(
   pools: PoolInfo[],
-  connection: Connection,
+  connection: Connection
 ) {
   let accounts: PublicKey[] = [];
   let allAccountInfo: AccountInfo<Buffer>[] = [];
@@ -342,31 +340,31 @@ export async function updateAllTokenAmount(
     accounts.push(pool.ammOpenOrders);
     if (accounts.length > 96) {
       const infos = (await connection.getMultipleAccountsInfo(
-      accounts,
+        accounts
       )) as AccountInfo<Buffer>[];
       allAccountInfo = allAccountInfo.concat(infos);
       accounts = [];
     }
   }
   const infos = (await connection.getMultipleAccountsInfo(
-    accounts,
+    accounts
   )) as AccountInfo<Buffer>[];
   allAccountInfo = allAccountInfo.concat(infos);
   for (let index = 0; index < pools.length; index++) {
     const pc = parseTokenAccount(
       allAccountInfo[index * 3].data,
-      pools[index].poolPcTokenAccount,
+      pools[index].poolPcTokenAccount
     );
     pools[index].pcAccountAmount = pc.amount;
     const coin = parseTokenAccount(
       allAccountInfo[index * 3 + 1].data,
-      pools[index].poolCoinTokenAccount,
+      pools[index].poolCoinTokenAccount
     );
     pools[index].coinAccountAmount = coin.amount;
     const ammOrder = OpenOrders.fromAccountInfo(
       pools[index].ammOpenOrders,
       allAccountInfo[index * 3 + 2],
-      pools[index].serumProgramId,
+      pools[index].serumProgramId
     );
     pools[index].ammOrderquoteTokenTotal = ammOrder.quoteTokenTotal;
     pools[index].ammOrderbaseTokenTotal = ammOrder.baseTokenTotal;

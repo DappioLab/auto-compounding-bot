@@ -1,4 +1,13 @@
-import { publicKey, struct, u64, u128, u8, u16, i64, bool } from "@project-serum/borsh";
+import {
+  publicKey,
+  struct,
+  u64,
+  u128,
+  u8,
+  u16,
+  i64,
+  bool,
+} from "@project-serum/borsh";
 
 export const FARM_LAYOUT = struct([
   publicKey("rewarderKey"),
@@ -55,34 +64,24 @@ export const WRAPINFO_LAYOUT = struct([
 ]);
 
 export const DEPOSIT_LAYPOUT = struct([
-  u8('instruction'),
-  u64('AtokenAmount'),
-  u64('BtokenAmount'),
-  u64('minimalRecieve'),
+  u8("instruction"),
+  u64("AtokenAmount"),
+  u64("BtokenAmount"),
+  u64("minimalRecieve"),
 ]);
 
 export const WITHDRAW_LAYOUT = struct([
-  u8('instruction'),
-  u64('LPtokenAmount'),
-  u64('minimalRecieve'),
+  u8("instruction"),
+  u64("LPtokenAmount"),
+  u64("minimalRecieve"),
 ]);
 
-export const WRAP_LAYOUT = struct([
-  u64('amount'),
-]);
+export const WRAP_LAYOUT = struct([u64("amount")]);
 
-export const UNWRAP_LAYOUT = struct([
-  u64('amount'),
-]);
+export const UNWRAP_LAYOUT = struct([u64("amount")]);
 
-export const DEPOSIT_TO_FARM_LAYOUT = struct([
-  u64('amount'),
-]);
+export const DEPOSIT_TO_FARM_LAYOUT = struct([u64("amount")]);
 
-export const CREATE_MINER_LAYOUT = struct([
-  u64('amount'),
-]);
+export const CREATE_MINER_LAYOUT = struct([u64("amount")]);
 
-export const WITHDRAW_FROM_FARM_LAYOUT = struct([
-  u64('amount'),
-]);
+export const WITHDRAW_FROM_FARM_LAYOUT = struct([u64("amount")]);

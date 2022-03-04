@@ -1,5 +1,7 @@
 import { Connection, PublicKey, AccountInfo } from "@solana/web3.js";
-import { parseV4PoolInfo } from "./infos"
+import { parseV4PoolInfo } from "./infos";
+
+export { swap } from "./transactions";
 
 export async function getAmmPool(ammId: PublicKey, conn: Connection) {
   const account = (await conn.getAccountInfo(ammId)) as AccountInfo<Buffer>;
